@@ -1,0 +1,62 @@
+name: Manual Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        type: choice
+        description: Choose Target
+        default: 'all'
+        options:
+        - 'all'
+        - 'esp32'
+        - 'esp32s2'
+        - 'esp32s3'
+        - 'esp32c3'
+        - 'esp32c6'
+        - 'esp32h2'
+      log_level:
+        type: choice
+        description: Choose Log Level
+        default: 'default'
+        options:
+        - 'default'
+        - 'none'
+        - 'verbose'
+        - 'debug'
+        - 'info'
+        - 'warning'
+        - 'error'
+
+jobs:
+  run:
+    name: Build ${{ github.ref_name }} SDK For ${{ github.event.inputs.target }} as ${{ github.event.inputs.log_level }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: bash ./tools/prepare-ci.sh
+
+      - name: Build
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          export TARGET_TYPE=${{ github.event.inputs.target }}
+          export LOG_LEVEL=${{ github.event.inputs.log_level }}
+          echo "Building for $TARGET_TYPE (log_level: $LOG_LEVEL)"
+          bash ./build.sh -e -d -t $TARGET_TYPE -D $LOG_LEVEL
+          
+      - name: Release
+        uses: jason2866/action-gh-release@v1.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "3.0.0.${{ github.run_number }}"
+          files: |
+            dist/framework*
+         

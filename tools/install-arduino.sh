@@ -60,3 +60,33 @@ else
 fi
 if [ $? -ne 0 ]; then exit 1; fi
 
+
+# Remove unwanted directories
+rm -rf "$AR_COMPS/arduino/docs" \
+       "$AR_COMPS/arduino/idf_component_examples" \
+       "$AR_COMPS/arduino/tests" \
+       "$AR_COMPS/arduino/libraries/RainMaker" \
+       "$AR_COMPS/arduino/libraries/Insights" \
+       "$AR_COMPS/arduino/libraries/SPIFFS" \
+       "$AR_COMPS/arduino/libraries/ESP_SR" \
+       "$AR_COMPS/arduino/libraries/TFLiteMicro"
+
+if [ $? -ne 0 ]; then
+    echo "Error removing directories"
+    exit 1
+fi
+
+# Replace CMakeLists.txt and idf_component.yml
+rm -rf "$AR_COMPS/arduino/CMakeLists.txt" "$AR_COMPS/arduino/idf_component.yml"
+
+cp "$AR_ROOT/configs/CMakeLists.txt" "$AR_COMPS/arduino/CMakeLists.txt"
+if [ $? -ne 0 ]; then
+    echo "Error copying CMakeLists.txt"
+    exit 1
+fi
+
+cp "$AR_ROOT/configs/idf_component.yml" "$AR_COMPS/arduino/idf_component.yml"
+if [ $? -ne 0 ]; then
+    echo "Error copying idf_component.yml"
+    exit 1
+fi

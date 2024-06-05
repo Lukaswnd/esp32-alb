@@ -11,7 +11,8 @@ MANIFEST_DATA = {
     "license": "LGPL-2.1-or-later",
     "repository": {
         "type": "git",
-        "url": "https://github.com/espressif/esp32-arduino-libs",
+        "url": "https://github.com/lukaswnd/esp32-arduino-libs",
+        "build-id": "0"
     },
 }
 
@@ -40,7 +41,7 @@ def convert_version(version_string):
     return ".".join((major, minor, patch))
 
 
-def main(dst_dir, version_string, commit_hash):
+def main(dst_dir, version_string, commit_hash, build_number):
 
     converted_version = convert_version(version_string)
     if not converted_version:
@@ -50,6 +51,7 @@ def main(dst_dir, version_string, commit_hash):
     manifest_file_path = os.path.join(dst_dir, "package.json")
     with open(manifest_file_path, "w", encoding="utf8") as fp:
         MANIFEST_DATA["version"] = f"{converted_version}+sha.{commit_hash}"
+        MANIFEST_DATA["repository"]["build-id"] = build_number
         json.dump(MANIFEST_DATA, fp, indent=2)
 
     print(
@@ -81,6 +83,13 @@ if __name__ == "__main__":
         required=True,
         help="ESP-IDF revision in form of a commit hash",
     )
+    parser.add_argument(
+        "-n",
+        "--build-number",
+        dest="build_number",
+        required=True,
+        help="Number of Github workflow build",
+    )
     args = parser.parse_args()
 
-    sys.exit(main(args.dst_dir, args.version_string, args.commit_hash))
+    sys.exit(main(args.dst_dir, args.version_string, args.commit_hash, args.build_number))

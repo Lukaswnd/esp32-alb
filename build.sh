@@ -142,7 +142,7 @@ if [ "$BUILD_TYPE" != "all" ]; then
             # Skip building for targets that are not in the $TARGET array
             continue
         fi
-                
+
         configs="configs/defconfig.common;configs/defconfig.$target;configs/defconfig.debug_$BUILD_DEBUG"
         for defconf in `echo "$target_json" | jq -c '.features[]' | tr -d '"'`; do
             configs="$configs;configs/defconfig.$defconf"
@@ -187,7 +187,7 @@ for target_json in `jq -c '.targets[]' configs/builds.json`; do
             continue
         fi
     fi
-    
+
     # Skip chips that should not be a part of the final libs
     # WARNING!!! this logic needs to be updated when cron builds are split into jobs
     if [ "$TARGET" = "all" ] && [ $target_skip -eq 1 ]; then
@@ -218,18 +218,18 @@ for target_json in `jq -c '.targets[]' configs/builds.json`; do
     idf.py -DIDF_TARGET="$target" -DSDKCONFIG_DEFAULTS="$idf_libs_configs" idf-libs
     if [ $? -ne 0 ]; then exit 1; fi
 
-    if [ "$target" == "esp32s3" ]; then
-        idf.py -DIDF_TARGET="$target" -DSDKCONFIG_DEFAULTS="$idf_libs_configs" srmodels_bin
-        if [ $? -ne 0 ]; then exit 1; fi
-        AR_SDK="$AR_TOOLS/esp32-arduino-libs/$target"
-        # sr model.bin
-        if [ -f "build/srmodels/srmodels.bin" ]; then
-            echo "$AR_SDK/esp_sr"
-            mkdir -p "$AR_SDK/esp_sr"
-            cp -f "build/srmodels/srmodels.bin" "$AR_SDK/esp_sr/"
-            cp -f "partitions.csv" "$AR_SDK/esp_sr/"
-        fi
-    fi
+    #if [ "$target" == "esp32s3" ]; then
+    #    idf.py -DIDF_TARGET="$target" -DSDKCONFIG_DEFAULTS="$idf_libs_configs" srmodels_bin
+    #    if [ $? -ne 0 ]; then exit 1; fi
+    #    AR_SDK="$AR_TOOLS/esp32-arduino-libs/$target"
+    #    # sr model.bin
+    #    if [ -f "build/srmodels/srmodels.bin" ]; then
+    #        echo "$AR_SDK/esp_sr"
+    #        mkdir -p "$AR_SDK/esp_sr"
+    #        cp -f "build/srmodels/srmodels.bin" "$AR_SDK/esp_sr/"
+    #        cp -f "partitions.csv" "$AR_SDK/esp_sr/"
+    #    fi
+    #fi
 
     # Build Bootloaders
     for boot_conf in `echo "$target_json" | jq -c '.bootloaders[]'`; do
@@ -310,9 +310,27 @@ if [ "$BUILD_TYPE" = "all" ]; then
     ibr=$(git describe --all 2>/dev/null)
     ic=$(git -C "$IDF_PATH" rev-parse --short HEAD)
     popd
-    python3 ./tools/gen_platformio_manifest.py -o "$TOOLS_JSON_OUT/" -s "$ibr" -c "$ic"
+    python3 ./tools/gen_platformio_manifest.py -o "$TOOLS_JSON_OUT/" -s "$ibr" -c "$ic" -n "$GITHUB_RUN_NUMBER"
     if [ $? -ne 0 ]; then exit 1; fi
 fi
+
+AR_VERSION=$(jq -c '.version' "$AR_COMPS/arduino/package.json" | tr -d '"')
+AR_VERSION_UNDERSCORE=`echo "$AR_VERSION" | tr . _`
+
+# Generate PlatformIO framework manifest file
+rm -rf "$AR_ROOT/package.json"
+if [ "$BUILD_TYPE" = "all" ]; then
+    python3 ./tools/gen_pio_frmwk_manifest.py -o "$AR_ROOT/" -s "v$AR_VERSION" -c "$IDF_COMMIT" -n "$GITHUB_RUN_NUMBER"
+    if [ $? -ne 0 ]; then exit 1; fi
+fi
+
+# Generate core_version.h
+rm -rf "$AR_ROOT/core_version.h"
+echo "#define ARDUINO_ESP32_GIT_VER 0x$AR_Commit_short
+#define ARDUINO_ESP32_GIT_DESC $AR_VERSION
+#define ARDUINO_ESP32_RELEASE_$AR_VERSION_UNDERSCORE
+#define ARDUINO_ESP32_RELEASE \"$AR_VERSION_UNDERSCORE\"" >> "$AR_ROOT/core_version.h"
+
 
 # copy everything to arduino-esp32 installation
 if [ $COPY_OUT -eq 1 ] && [ -d "$ESP32_ARDUINO" ]; then
