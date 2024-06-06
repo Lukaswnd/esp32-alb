@@ -12,7 +12,7 @@ fi
 #
 
 if [ ! -d "$IDF_PATH" ]; then
-	echo "ESP-IDF is not installed! Installing local copy"
+	echo "ESP-IDF is not installed! Installing local copy from ${IDF_REPO_URL} ${IDF_BRANCH}"
 	git clone $IDF_REPO_URL -b $IDF_BRANCH
 	idf_was_installed="1"
 fi
