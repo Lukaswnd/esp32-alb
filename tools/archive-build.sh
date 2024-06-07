@@ -43,7 +43,7 @@ cp -rf arduino-esp32/ framework-arduinoespressif32/
 
 cp -rf tools/esp32-arduino-libs arduino-esp32/tools/
 # Use sed to replace the line
-sed -i '/^FRAMEWORK_LIBS_DIR = /c\FRAMEWORK_SDK_DIR = join(FRAMEWORK_DIR, "tools", "esp32-arduino-libs")' "arduino-esp32/tools/platformio-build.py"
+sed -i '/^FRAMEWORK_LIBS_DIR = /c\FRAMEWORK_LIBS_DIR = join(FRAMEWORK_DIR, "tools", "esp32-arduino-libs")' "arduino-esp32/tools/platformio-build.py"
 # Check if the sed command was successful
 if [ $? -eq 0 ]; then
   echo "File updated successfully."
