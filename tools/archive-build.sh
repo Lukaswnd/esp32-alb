@@ -15,7 +15,7 @@ if [ -d "out" ]; then
 fi
 
 cd out 
-echo "Creating PlatformIO Tasmota framework-arduinoespressif32"
+echo "Creating PlatformIO framework-arduinoespressif32"
 mkdir -p arduino-esp32/cores/esp32
 mkdir -p arduino-esp32/tools/partitions
 cp -rf ../components/arduino/tools arduino-esp32
