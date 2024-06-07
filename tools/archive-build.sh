@@ -52,7 +52,7 @@ else
 fi
 find "arduino-esp32/tools/esp32-arduino-libs" -type f -name "platformio-build.py" | while read -r FILE_PATH; do
   # Use sed to replace the line
-  sed -i '/^FRAMEWORK_LIBS_DIR = /c\FRAMEWORK_SDK_DIR = join(FRAMEWORK_DIR, "tools", "esp32-arduino-libs")' "$FILE_PATH"
+   sed -i -e '/^FRAMEWORK_SDK_DIR = env.PioPlatform().get_package_dir(/,/^)/c\FRAMEWORK_SDK_DIR = join(FRAMEWORK_DIR, "tools", "esp32-arduino-libs")' "$FILE_PATH"
 
   # Check if the sed command was successful
   if [ $? -eq 0 ]; then

@@ -52,11 +52,11 @@ jobs:
           bash ./build.sh -e -d -t $TARGET_TYPE -D $LOG_LEVEL
           
       - name: Release
-        uses: jason2866/action-gh-release@v1.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: "3.0.x.${{ github.run_number }}"
+          name: "Release ${{ github.run_number }} 3.0.x "
+          tag_name: "r3.0.0.${{ github.run_number }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             dist/framework*
             dist/build.zip
